@@ -81,10 +81,13 @@ class Apple(GameObject):
     def randomize_position(self) -> tuple:
         """Функция для переопределения позиция яблока на поле"""
         position = (
-            randint(0, GRID_WIDTH) * GRID_SIZE,
-            randint(0, GRID_HEIGHT) * GRID_SIZE
+            randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+            randint(0, GRID_HEIGHT - 1) * GRID_SIZE
         )
         return position
+    
+    def update_position(self):
+        self.position = self.randomize_position()
 
 
 class Snake(GameObject):
@@ -94,9 +97,10 @@ class Snake(GameObject):
     При запуске игры змейка сразу же начинает движение вправо по игровому полю.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, apple) -> None:
         super().__init__()
         self.body_color = SNAKE_COLOR
+        self.apple_obj = apple
         self.length = None
         self.direction = RIGHT
         self.next_direction = None
@@ -117,27 +121,37 @@ class Snake(GameObject):
 
         # Получение текущих координат головы змеи.
         width_coord, height_coord = self.get_head_position()
+        # Определение вектора движения.
+        width_move = GRID_SIZE * self.direction[0] \
+            if self.direction[0] != 0 else 0
+        height_move = GRID_SIZE * self.direction[1] \
+            if self.direction[1] != 0 else 0
         # Отзеркаливание змейки.
         # Определение правого края экрана
         if width_coord >= SCREEN_WIDTH:
             width_coord = 0
+            width_move = 0
         # Определение левого края экрана.
-        if width_coord < 0:
+        elif width_coord < 0:
             width_coord = SCREEN_WIDTH
         # Определение нижнего края.
-        if height_coord >= SCREEN_HEIGHT:
-            height_coord = + GRID_SIZE
+        elif height_coord >= SCREEN_HEIGHT:
+            height_coord = 0
+            height_move = 0
         # Определение верхнего края.
-        if height_coord < 0:
+        elif height_coord < 0:
             height_coord = SCREEN_HEIGHT
-        width_move = GRID_SIZE * self.direction[0] if self.direction[0] != 0 else 0
-        height_move = GRID_SIZE * self.direction[1] if self.direction[1] != 0 else 0
-        print(self.direction, self.next_direction, width_move, height_move)
-        print(self.positions)
+        # print(self.direction, self.next_direction, width_move, height_move)
+        print(self.apple_obj.position)
+        # Движение змейки
         self.positions.insert(0, (width_coord + width_move, height_coord + height_move))
         self.last = self.positions.pop()
-
-
+        # Сравнение координат головы змеи и яблока,
+        # если сошлись увеличиваем длинну змеи.
+        if self.get_head_position() == self.apple_obj.position:
+            self.positions.insert(0, self.apple_obj.position)
+            self.apple_obj.update_position()
+            
 
 
     def draw(self) -> None:
@@ -187,13 +201,12 @@ def handle_keys(game_object):
                 game_object.next_direction = RIGHT
 
 
-
 def main():
     """Инициализация PyGame:"""
     pygame.init()
     # Тут нужно создать экземпляры классов.
     apple = Apple()
-    snake = Snake()
+    snake = Snake(apple)
 
     while True:
         clock.tick(SPEED)
