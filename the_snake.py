@@ -98,10 +98,9 @@ class Snake(GameObject):
         super().__init__()
         self.body_color = SNAKE_COLOR
         self.length = None
-        self.direction = None
+        self.direction = RIGHT
         self.next_direction = None
         self.positions = [((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))]
-        print(self.position)
         self.last = None
 
     def update_direction(self):
@@ -115,7 +114,31 @@ class Snake(GameObject):
         добавляя новую голову в начало списка positions и удаляя
         последний элемент, если длина змейки не увеличилась.
         """
-        pass
+
+        # Получение текущих координат головы змеи.
+        width_coord, height_coord = self.get_head_position()
+        # Отзеркаливание змейки.
+        # Определение правого края экрана
+        if width_coord >= SCREEN_WIDTH:
+            width_coord = 0
+        # Определение левого края экрана.
+        if width_coord < 0:
+            width_coord = SCREEN_WIDTH
+        # Определение нижнего края.
+        if height_coord >= SCREEN_HEIGHT:
+            height_coord = + GRID_SIZE
+        # Определение верхнего края.
+        if height_coord < 0:
+            height_coord = SCREEN_HEIGHT
+        width_move = GRID_SIZE * self.direction[0] if self.direction[0] != 0 else 0
+        height_move = GRID_SIZE * self.direction[1] if self.direction[1] != 0 else 0
+        print(self.direction, self.next_direction, width_move, height_move)
+        print(self.positions)
+        self.positions.insert(0, (width_coord + width_move, height_coord + height_move))
+        self.last = self.positions.pop()
+
+
+
 
     def draw(self) -> None:
         """отрисовывает змейку на экране, затирая след"""
@@ -138,7 +161,7 @@ class Snake(GameObject):
         """возвращает позицию головы змейки
         (первый элемент в списке positions).
         """
-        pass
+        return self.positions[0]
 
     def reset(self):
         """сбрасывает змейку в начальное состояние."""
@@ -177,6 +200,9 @@ def main():
         handle_keys(snake)
         apple.draw()
         snake.draw()
+        snake.move()
+        snake.update_direction()
+
         pygame.display.update()
 
     # Тут опишите основную логику игры.
