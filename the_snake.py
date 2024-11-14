@@ -85,7 +85,7 @@ class Apple(GameObject):
             randint(0, GRID_HEIGHT - 1) * GRID_SIZE
         )
         return position
-    
+
     def update_position(self):
         self.position = self.randomize_position()
 
@@ -104,7 +104,7 @@ class Snake(GameObject):
         self.length = None
         self.direction = RIGHT
         self.next_direction = None
-        self.positions = [((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))]
+        self.positions = [(300, 300 + x) for x in range(1, 400, 20)]
         self.last = None
 
     def update_direction(self):
@@ -142,17 +142,18 @@ class Snake(GameObject):
         elif height_coord < 0:
             height_coord = SCREEN_HEIGHT
         # print(self.direction, self.next_direction, width_move, height_move)
-        print(self.apple_obj.position)
+        # print(self.apple_obj.position)
         # Движение змейки
-        self.positions.insert(0, (width_coord + width_move, height_coord + height_move))
+        self.positions.insert(
+            0, (width_coord + width_move, height_coord + height_move))
         self.last = self.positions.pop()
         # Сравнение координат головы змеи и яблока,
         # если сошлись увеличиваем длинну змеи.
         if self.get_head_position() == self.apple_obj.position:
             self.positions.insert(0, self.apple_obj.position)
             self.apple_obj.update_position()
-            
-
+        if self.chek_collapse():
+            self.reset()
 
     def draw(self) -> None:
         """отрисовывает змейку на экране, затирая след"""
@@ -179,7 +180,15 @@ class Snake(GameObject):
 
     def reset(self):
         """сбрасывает змейку в начальное состояние."""
-        pass
+        screen.fill(BOARD_BACKGROUND_COLOR)
+        self.positions.clear
+        self.positions = [self.position]
+        self.direction = RIGHT
+
+    def chek_collapse(self):
+        """Проверка на столкновении змейки с самой собой"""
+        return any(self.get_head_position() == coords
+                   for coords in self.positions[2:])
 
 
 def handle_keys(game_object):
