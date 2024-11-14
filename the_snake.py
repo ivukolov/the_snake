@@ -1,5 +1,4 @@
-from random import choice, randint
-from typing import Optional, Union
+from random import randint
 
 import pygame
 
@@ -141,8 +140,6 @@ class Snake(GameObject):
         # Определение верхнего края.
         elif height_coord < 0:
             height_coord = SCREEN_HEIGHT
-        # print(self.direction, self.next_direction, width_move, height_move)
-        # print(self.apple_obj.position)
         # Движение змейки
         self.positions.insert(
             0, (width_coord + width_move, height_coord + height_move))
@@ -213,10 +210,12 @@ def handle_keys(game_object):
 def main():
     """Инициализация PyGame:"""
     pygame.init()
-    # Тут нужно создать экземпляры классов.
+    # Экземпляры классов.
     apple = Apple()
+    # Объект apple передаётся при инициализации классу Snake
+    # Для определения координат яблока
     snake = Snake(apple)
-
+    # Основная логика игры.
     while True:
         clock.tick(SPEED)
         handle_keys(snake)
@@ -224,11 +223,7 @@ def main():
         snake.draw()
         snake.move()
         snake.update_direction()
-
         pygame.display.update()
-
-    # Тут опишите основную логику игры.
-    # ...
 
 
 if __name__ == '__main__':
