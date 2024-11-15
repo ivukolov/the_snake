@@ -66,6 +66,9 @@ class Apple(GameObject):
     При создании яблока координаты для него определяются случайным образом
     и сохраняются до тех пор, пока змейка не «съест» яблоко.
     После этого для яблока вновь задаются случайные координаты.
+    self.body_color: Optional[tuple[int, int, int]] Цвет объекта.
+    self.position: tuple[int, int] позиция объекта на поле.
+    return None
     """
 
     def __init__(self) -> None:
@@ -96,6 +99,16 @@ class Snake(GameObject):
     на игровом поле. Змейка постоянно куда-то ползёт и после того,
     как «съест» яблоко, вырастает на один сегмент.
     При запуске игры змейка сразу же начинает движение вправо по игровому полю.
+    self.body_color: Optional[tuple[int, int, int]] Цвет змеи.
+    self.apple_obj: Apple экземпляр класса Apple для получения координат.
+    self.direction: tuple[int, int] Направление движения змеи
+    self.next_direction: Optional[tuple[int, int]] Промежуточное состояние
+    движения змеи.
+    self.positions: list[tuple[int, int],] Координаты всех элементов змеи
+    на поле.
+    self.length: Optional[int] Текущая длинна змеи
+    self.last: Optional[tuple[int, int]] Определение хвоста змеи
+    return None
     """
 
     def __init__(self, apple) -> None:
@@ -104,9 +117,10 @@ class Snake(GameObject):
         self.apple_obj: Apple = apple
         self.direction: tuple[int, int] = RIGHT
         self.next_direction: Optional[tuple[int, int]] = None
-        # Параметры для дебага position:
+        # Параметры для дебага positions:
         # [(300, 300 + x) for x in range(1, 400, 20)].
         self.positions: list[tuple[int, int],] = [self.position]
+        # Доработать вариант с использованием длинны
         self.length: Optional[int] = len(self.positions)
         self.last: Optional[tuple[int, int]] = None
 
@@ -153,8 +167,6 @@ class Snake(GameObject):
         if self.get_head_position() == self.apple_obj.position:
             self.positions.insert(0, self.apple_obj.position)
             self.apple_obj.update_position()
-        if self.chek_collapse():
-            self.reset()
 
     def draw(self) -> None:
         """отрисовывает змейку на экране, затирая след"""
@@ -221,13 +233,22 @@ def main():
     snake = Snake(apple)
     # Основная логика игры.
     while True:
+        # Симуляция задержки.
         clock.tick(SPEED)
+        # Передача управления змейке.
         handle_keys(snake)
+        # Отрисовка объектов
         apple.draw()
         snake.draw()
-        snake.move()
+        # Обновление направления движения
         snake.update_direction()
+        # Движение змейки
+        snake.move()
+        # Отрисовка объектов на экране
         pygame.display.update()
+        # Проверка на столкновении
+        if snake.chek_collapse():
+            snake.reset()
 
 
 if __name__ == '__main__':
