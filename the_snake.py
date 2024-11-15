@@ -50,7 +50,7 @@ class GameObject:
 
     def __init__(self) -> None:
         # Позиция по умолчанию -  посередине экрана.
-        self.position: tuple[int, int] = GRID_MIDLE 
+        self.position: tuple[int, int] = GRID_MIDLE
         # Цвет по умолчанию в родительском классе
         self.body_color: Optional[tuple[int, int, int]] = None
 
