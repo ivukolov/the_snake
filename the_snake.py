@@ -1,4 +1,5 @@
 from random import randint
+from typing import Optional
 
 import pygame
 
@@ -48,9 +49,10 @@ class GameObject:
 
     def __init__(self) -> None:
         # Позиция по умолчанию -  посередине экрана.
-        self.position = (SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2)
+        self.position: tuple[int, int] = (
+            SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2)
         # Цвет по умолчанию в родительском классе
-        self.body_color = None
+        self.body_color: Optional[tuple[int, int, int]] = None
 
     def draw(self) -> None:
         """Функция заглушка
@@ -68,24 +70,24 @@ class Apple(GameObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self.body_color = APPLE_COLOR
-        self.position = self.randomize_position()
+        self.body_color: Optional[tuple[int, int, int]] = APPLE_COLOR
+        self.position: tuple[int, int] = self.randomize_position()
 
     def draw(self) -> None:
-        """Функция отрисовки яблока"""
+        """Функция отрисовки яблока."""
         rect = pygame.Rect(self.position, (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, rect)
         pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-    def randomize_position(self) -> tuple:
+    def randomize_position(self) -> tuple[int, int]:
         """Функция для переопределения позиция яблока на поле"""
-        position = (
+        position: tuple[int, int] = (
             randint(0, GRID_WIDTH - 1) * GRID_SIZE,
             randint(0, GRID_HEIGHT - 1) * GRID_SIZE
         )
         return position
 
-    def update_position(self):
+    def update_position(self) -> None:
         self.position = self.randomize_position()
 
 
@@ -98,21 +100,23 @@ class Snake(GameObject):
 
     def __init__(self, apple) -> None:
         super().__init__()
-        self.body_color = SNAKE_COLOR
-        self.apple_obj = apple
-        self.length = None
-        self.direction = RIGHT
-        self.next_direction = None
-        self.positions = [(300, 300 + x) for x in range(1, 400, 20)]
-        self.last = None
+        self.body_color: Optional[tuple[int, int, int]] = SNAKE_COLOR
+        self.apple_obj: Apple = apple
+        self.direction: tuple[int, int] = RIGHT
+        self.next_direction: Optional[tuple[int, int]] = None
+        # Параметры для дебага position:
+        # [(300, 300 + x) for x in range(1, 400, 20)].
+        self.positions: list[tuple[int, int],] = [self.position]
+        self.length: Optional[int] = len(self.positions)
+        self.last: Optional[tuple[int, int]] = None
 
-    def update_direction(self):
+    def update_direction(self) -> None:
         """обновляет направление движения змейки"""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
-    def move(self):
+    def move(self) -> None:
         """обновляет позицию змейки (координаты каждой секции),
         добавляя новую голову в начало списка positions и удаляя
         последний элемент, если длина змейки не увеличилась.
@@ -121,9 +125,9 @@ class Snake(GameObject):
         # Получение текущих координат головы змеи.
         width_coord, height_coord = self.get_head_position()
         # Определение вектора движения.
-        width_move = GRID_SIZE * self.direction[0] \
+        width_move: int = GRID_SIZE * self.direction[0] \
             if self.direction[0] != 0 else 0
-        height_move = GRID_SIZE * self.direction[1] \
+        height_move: int = GRID_SIZE * self.direction[1] \
             if self.direction[1] != 0 else 0
         # Отзеркаливание змейки.
         # Определение правого края экрана
