@@ -51,7 +51,6 @@ class GameObject:
     def __init__(self) -> None:
         # Позиция по умолчанию -  посередине экрана.
         self.position: tuple[int, int] = GRID_MIDLE
-            
         # Цвет по умолчанию в родительском классе
         self.body_color: Optional[tuple[int, int, int]] = None
 
@@ -121,7 +120,7 @@ class Snake(GameObject):
         self.next_direction: Optional[tuple[int, int]] = None
         # Параметры для дебага positions:
         # [(300, 300 + x) for x in range(1, 400, 20)].
-        self.positions: list[tuple[int, int],] = [self.position]
+        self.positions: list[tuple[int, int], ] = [self.position]
         # Длинна змеи.
         self.length: Optional[int] = len(self.positions)
         # Координаты хвоста, по умолчанию его нет
