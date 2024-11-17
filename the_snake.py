@@ -77,6 +77,13 @@ class GameObject:
         """Метод класса для очистки атрибута класса _occupied_cells."""
         cls._occupied_cells.clear()
 
+    @classmethod
+    def pop_occupied_cells(cls):
+        """Метод класса для удаления
+        последнего элемента атрибута _occupied_cells.
+        """
+        cls._occupied_cells.pop()
+
 
 class Apple(GameObject):
     """Яблоко — это просто квадрат размером в одну ячейку игрового поля.
@@ -171,7 +178,7 @@ class Snake(GameObject):
         self.append_occupied_cells(position_to_insert)
         if self.get_head_position() != self._apple_obj.position:
             self.last = self.positions.pop()
-            self._occupied_cells.pop()
+            self.pop_occupied_cells()
         else:
             self._apple_obj.update_position()
 
@@ -219,19 +226,24 @@ def handle_keys(game_object):
     """обрабатывает нажатия клавиш,
     чтобы изменить направление движения змейки.
     """
+    # Словарь параметров движения змейки.
+    move_set: dict[tuple: tuple] = {
+        (DOWN, pygame.K_UP): UP,
+        (UP, pygame.K_DOWN): DOWN,
+        (RIGHT, pygame.K_LEFT): LEFT,
+        (LEFT, pygame.K_RIGHT): RIGHT
+    }
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             raise SystemExit
+        # Перебор словарей для определения направления движения.
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and game_object.direction != DOWN:
-                game_object.next_direction = UP
-            elif event.key == pygame.K_DOWN and game_object.direction != UP:
-                game_object.next_direction = DOWN
-            elif event.key == pygame.K_LEFT and game_object.direction != RIGHT:
-                game_object.next_direction = LEFT
-            elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
-                game_object.next_direction = RIGHT
+            print(event.key)
+            print(game_object.direction)
+            for key, value in move_set.items():
+                if event.key == key[1] and game_object.direction != key[0]:
+                    game_object.next_direction = value
 
 
 def main():
