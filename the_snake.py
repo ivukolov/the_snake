@@ -32,6 +32,13 @@ SNAKE_COLOR = (0, 255, 0)
 # Скорость движения змейки:
 SPEED = 20
 
+SNAKE_MOVEMENTS: dict[tuple: tuple] = {
+    (DOWN, pygame.K_UP): UP,
+    (UP, pygame.K_DOWN): DOWN,
+    (RIGHT, pygame.K_LEFT): LEFT,
+    (LEFT, pygame.K_RIGHT): RIGHT
+}
+
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
@@ -227,12 +234,6 @@ def handle_keys(game_object):
     чтобы изменить направление движения змейки.
     """
     # Словарь параметров движения змейки.
-    move_set: dict[tuple: tuple] = {
-        (DOWN, pygame.K_UP): UP,
-        (UP, pygame.K_DOWN): DOWN,
-        (RIGHT, pygame.K_LEFT): LEFT,
-        (LEFT, pygame.K_RIGHT): RIGHT
-    }
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -241,7 +242,7 @@ def handle_keys(game_object):
         if event.type == pygame.KEYDOWN:
             print(event.key)
             print(game_object.direction)
-            for key, value in move_set.items():
+            for key, value in SNAKE_MOVEMENTS.items():
                 if event.key == key[1] and game_object.direction != key[0]:
                     game_object.next_direction = value
 
