@@ -72,7 +72,7 @@ class GameObject:
     @classmethod
     def is_occupied_cells(cls, position: tuple) -> bool:
         """Метод класса для проверки занятых ячеек."""
-        return any(position == cell for cell in cls._occupied_cells)
+        return any(position in cell for cell in cls._occupied_cells)
 
     @classmethod
     def append_occupied_cells(cls, position: tuple) -> None:
@@ -145,10 +145,9 @@ class Snake(GameObject):
     return None
     """
 
-    def __init__(self, apple=None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.body_color: Optional[tuple[int, int, int]] = SNAKE_COLOR
-        self._apple_obj: Optional[Apple] = apple
         self.reset()
 
     def update_direction(self) -> None:
@@ -172,9 +171,9 @@ class Snake(GameObject):
         )
         # Проверка границ по ширине и высоте. Если пересечение,
         # то выполняем деление по модулю для отзеркаливания.
-        if width_coord == 0 or width_coord == SCREEN_WIDTH - GRID_SIZE:
+        if width_coord or width_coord == SCREEN_WIDTH - GRID_SIZE:
             width_move = width_move % SCREEN_WIDTH
-        if height_coord == 0 or height_coord == SCREEN_HEIGHT - GRID_SIZE:
+        if height_coord or height_coord == SCREEN_HEIGHT - GRID_SIZE:
             height_move = height_move % SCREEN_HEIGHT
         # Движение змейки
         position_to_insert: tuple = (width_move, height_move)
@@ -182,12 +181,8 @@ class Snake(GameObject):
         self.positions.insert(
             0, position_to_insert
         )
-        self.append_occupied_cells(position_to_insert)
-        if self.get_head_position() != self._apple_obj.position:
-            self.last = self.positions.pop()
-            self.pop_occupied_cells()
-        else:
-            self._apple_obj.update_position()
+        self.last = self.positions.pop()
+        self.pop_occupied_cells()
 
     def draw(self) -> None:
         """отрисовывает змейку на экране, затирая следа"""
@@ -226,7 +221,6 @@ class Snake(GameObject):
         self.length: Optional[int] = len(self.positions)
         # Координаты хвоста, по умолчанию его нет
         self.last: Optional[tuple[int, int]] = None
-        self.append_occupied_cells(self.get_head_position())
 
 
 def handle_keys(game_object):
@@ -240,8 +234,6 @@ def handle_keys(game_object):
             raise SystemExit
         # Перебор словарей для определения направления движения.
         if event.type == pygame.KEYDOWN:
-            print(event.key)
-            print(game_object.direction)
             for key, value in SNAKE_MOVEMENTS.items():
                 if event.key == key[1] and game_object.direction != key[0]:
                     game_object.next_direction = value
@@ -251,10 +243,8 @@ def main():
     """Инициализация PyGame:"""
     pygame.init()
     # Экземпляры классов.
+    snake = Snake()
     apple = Apple()
-    # Объект apple передаётся при инициализации классу Snake
-    # Для определения координат яблока
-    snake = Snake(apple)
     # Основная логика игры.
     while True:
         # Симуляция задержки.
@@ -262,19 +252,26 @@ def main():
         # Передача управления змейке.
         handle_keys(snake)
         # Отрисовка объектов
-        apple.draw()
         snake.draw()
+        snake.append_occupied_cells(snake.positions)
+        apple.draw()
         # Обновление направления движения
         snake.update_direction()
         # Движение змейки
         snake.move()
-        # Отрисовка объектов на экране
-        pygame.display.update()
-        # Проверка на столкновении
-        if any(snake.get_head_position() == coords
-               for coords in snake.positions[2:]):
+        # Проверка - съела ли змея яблоко.
+        if snake.get_head_position() == apple.position:
+            snake.positions.insert(0, apple.position)
+            apple.update_position()
+        # Проверка на столкновении с телом
+        elif any(
+            snake.get_head_position() == coords
+            for coords in snake.positions[1:]
+        ):
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
+        # Отрисовка объектов на экране
+        pygame.display.update()
 
 
 if __name__ == '__main__':
