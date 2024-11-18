@@ -32,6 +32,8 @@ SNAKE_COLOR = (0, 255, 0)
 # Скорость движения змейки:
 SPEED = 20
 
+# Словарь с направлениями движения змеи,
+# обрабатывается в handle_keys 
 SNAKE_MOVEMENTS: dict[tuple: tuple] = {
     (DOWN, pygame.K_UP): UP,
     (UP, pygame.K_DOWN): DOWN,
@@ -75,21 +77,15 @@ class GameObject:
         return any(position in cell for cell in cls._occupied_cells)
 
     @classmethod
-    def append_occupied_cells(cls, position: tuple) -> None:
+    def append_occupied_cells(cls, positions: list[tuple]) -> None:
         """Метод класса для добавления занятых ячеек."""
-        cls._occupied_cells.insert(0, position)
+        for position in reversed(positions):
+            cls._occupied_cells.append(position)
 
     @classmethod
     def clear_occupied_cells(cls):
         """Метод класса для очистки атрибута класса _occupied_cells."""
         cls._occupied_cells.clear()
-
-    @classmethod
-    def pop_occupied_cells(cls):
-        """Метод класса для удаления
-        последнего элемента атрибута _occupied_cells.
-        """
-        cls._occupied_cells.pop()
 
 
 class Apple(GameObject):
@@ -163,10 +159,12 @@ class Snake(GameObject):
         """
         # Получение текущих координат головы змеи.
         width_coord, height_coord = self.get_head_position()
+        # Распаковка направления движения.
+        width_direction, height_direction = self.direction
         # Определение вектора движения.
         width_move, height_move = (
-            GRID_SIZE * self.direction[0] + width_coord,
-            GRID_SIZE * self.direction[1] + height_coord
+            GRID_SIZE * width_direction + width_coord,
+            GRID_SIZE * height_direction + height_coord
             if self.direction != 0 else 0
         )
         # Проверка границ по ширине и высоте. Если пересечение,
@@ -182,7 +180,6 @@ class Snake(GameObject):
             0, position_to_insert
         )
         self.last = self.positions.pop()
-        self.pop_occupied_cells()
 
     def draw(self) -> None:
         """отрисовывает змейку на экране, затирая следа"""
@@ -251,11 +248,13 @@ def main():
         clock.tick(SPEED)
         # Передача управления змейке.
         handle_keys(snake)
-        # Отрисовка объектов
+        # Отрисовка объектов.
         snake.draw()
+        # Добавление в атрибут класса занятых ячеек.
         snake.append_occupied_cells(snake.positions)
+        print(snake._occupied_cells)
         apple.draw()
-        # Обновление направления движения
+        # Обновление направления движения.
         snake.update_direction()
         # Движение змейки
         snake.move()
@@ -263,15 +262,17 @@ def main():
         if snake.get_head_position() == apple.position:
             snake.positions.insert(0, apple.position)
             apple.update_position()
-        # Проверка на столкновении с телом
+        # Проверка на столкновении с телом.
         elif any(
             snake.get_head_position() == coords
             for coords in snake.positions[1:]
         ):
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
-        # Отрисовка объектов на экране
+        # Отрисовка объектов на экране.
         pygame.display.update()
+        # Очитска занятых ячеек , перед новой итерацией.
+        snake.clear_occupied_cells()
 
 
 if __name__ == '__main__':
