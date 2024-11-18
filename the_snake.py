@@ -58,8 +58,6 @@ class GameObject:
     для всех объектов
     """
 
-    _occupied_cells: list[tuple[int, int], ] = []
-
     def __init__(self) -> None:
         # Позиция по умолчанию -  посередине экрана.
         self.position: tuple[int, int] = GRID_MIDLE
@@ -71,22 +69,6 @@ class GameObject:
         для дочерних классов
         """
 
-    @classmethod
-    def is_occupied_cells(cls, position: tuple) -> bool:
-        """Метод класса для проверки занятых ячеек."""
-        return any(position in cell for cell in cls._occupied_cells)
-
-    @classmethod
-    def append_occupied_cells(cls, positions: list[tuple]) -> None:
-        """Метод класса для добавления занятых ячеек."""
-        for position in positions:
-            cls._occupied_cells.append(position)
-
-    @classmethod
-    def clear_occupied_cells(cls) -> None:
-        """Метод класса для очистки атрибута класса _occupied_cells."""
-        cls._occupied_cells.clear()
-
 
 class Apple(GameObject):
     """Яблоко — это просто квадрат размером в одну ячейку игрового поля.
@@ -94,13 +76,15 @@ class Apple(GameObject):
     и сохраняются до тех пор, пока змейка не «съест» яблоко.
     После этого для яблока вновь задаются случайные координаты.
     self.body_color: Optional[tuple[int, int, int]] Цвет объекта.
+    self.snake_positions: list[tuple[int, int] Координаты змеи
     self.position: tuple[int, int] позиция объекта на поле.
     return None
     """
 
-    def __init__(self) -> None:
+    def __init__(self, snake_positions: list[tuple[int, int], ]) -> None:
         super().__init__()
         self.body_color: Optional[tuple[int, int, int]] = APPLE_COLOR
+        self.snake_positions = snake_positions
         self.position: tuple[int, int] = self.randomize_position()
 
     def draw(self) -> None:
@@ -115,7 +99,7 @@ class Apple(GameObject):
             randint(0, GRID_WIDTH - 1) * GRID_SIZE,
             randint(0, GRID_HEIGHT - 1) * GRID_SIZE
         )
-        if self.is_occupied_cells(position):
+        if position in self.snake_positions:
             self.randomize_position()
         return position
 
@@ -162,19 +146,11 @@ class Snake(GameObject):
         # Распаковка направления движения.
         width_direction, height_direction = self.direction
         # Определение вектора движения.
-        width_move, height_move = (
-            GRID_SIZE * width_direction + width_coord,
-            GRID_SIZE * height_direction + height_coord
-            if self.direction != 0 else 0
-        )
-        # Проверка границ по ширине и высоте. Если пересечение,
-        # то выполняем деление по модулю для отзеркаливания.
-        if width_move or width_move == SCREEN_WIDTH - GRID_SIZE:
-            width_move = width_move % SCREEN_WIDTH
-        if height_move or height_move == SCREEN_HEIGHT - GRID_SIZE:
-            height_move = height_move % SCREEN_HEIGHT
         # Движение змейки
-        position_to_insert: tuple = (width_move, height_move)
+        position_to_insert = (
+            (width_coord + (width_direction * GRID_SIZE)) % SCREEN_WIDTH,
+            (height_coord + (height_direction * GRID_SIZE)) % SCREEN_HEIGHT,
+        )
         self.positions.insert(
             0, position_to_insert
         )
@@ -207,7 +183,6 @@ class Snake(GameObject):
 
     def reset(self):
         """сбрасывает змейку в начальное состояние."""
-        self.clear_occupied_cells()
         self.direction: tuple[int, int] = RIGHT
         self.next_direction: Optional[tuple[int, int]] = None
         # Параметры для дебага positions:
@@ -241,7 +216,8 @@ def main():
     pygame.init()
     # Экземпляры классов.
     snake = Snake()
-    apple = Apple()
+    # Передача координат змеи, для генерации позиции яблока
+    apple = Apple(snake.positions)
     # Основная логика игры.
     while True:
         # Симуляция задержки.
@@ -250,8 +226,6 @@ def main():
         handle_keys(snake)
         # Отрисовка змеи.
         snake.draw()
-        # Добавление в атрибут класса занятых ячеек.
-        snake.append_occupied_cells(snake.positions)
         # Отрисовка яблока.
         apple.draw()
         # Обновление направления движения.
@@ -263,17 +237,12 @@ def main():
             snake.positions.insert(0, apple.position)
             apple.update_position()
         # Проверка на столкновении с телом.
-        elif any(
-            snake.get_head_position() == coords
-            for coords in snake.positions[1:]
-        ):
+        elif snake.get_head_position() in snake.positions[1:]:
             snake.reset()
             apple.update_position()
             screen.fill(BOARD_BACKGROUND_COLOR)
         # Отрисовка объектов на экране.
         pygame.display.update()
-        # Очитска занятых ячеек , перед новой итерацией.
-        snake.clear_occupied_cells()
 
 
 if __name__ == '__main__':
