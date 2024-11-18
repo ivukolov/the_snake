@@ -30,7 +30,7 @@ APPLE_COLOR = (255, 0, 0)
 SNAKE_COLOR = (0, 255, 0)
 
 # Скорость движения змейки:
-SPEED = 5
+SPEED = 20
 
 # Словарь с направлениями движения змеи,
 # обрабатывается в handle_keys
@@ -81,7 +81,7 @@ class Apple(GameObject):
     return None
     """
 
-    def __init__(self, snake_positions: list[tuple[int, int], ]) -> None:
+    def __init__(self, snake_positions: list[tuple[int, int], ] = []) -> None:
         super().__init__()
         self.body_color: Optional[tuple[int, int, int]] = APPLE_COLOR
         self.snake_positions = snake_positions
