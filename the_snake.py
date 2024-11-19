@@ -85,6 +85,8 @@ class Apple(GameObject):
         self,
         snake_positions: Optional[list[tuple[int, int]]] = None
     ) -> None:
+        if not snake_positions:
+            snake_positions = []
         super().__init__()
         self.body_color: Optional[tuple[int, int, int]] = APPLE_COLOR
         self.snake_positions = snake_positions
